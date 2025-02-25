@@ -1,7 +1,14 @@
-const express = require('express');
+import express from 'express';
+import morganBody from 'morgan-body';
+import bodyParser from 'body-parser';
+
 const app = express();
 
 app.use(express.json());
+app.use(bodyParser.json());
+
+morganBody(app);
+
 
 const persons = [
     { 
