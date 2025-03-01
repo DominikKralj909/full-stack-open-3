@@ -1,11 +1,14 @@
 import express from 'express';
 import morganBody from 'morgan-body';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cors());
+app.use(express.static('dist'));
 
 morganBody(app);
 
@@ -84,7 +87,20 @@ app.post('/api/persons', (request, response) => {
 	response.status(201).json(newPerson);
 });
 
-const PORT = '3001';
-app.listen(PORT, () => {
-	console.log(`App is running on port: ${PORT}`);
+app.put('/api/persons/:id', (request, response) => {
+	const id = request.params.id;
+	const { number } = request.body;
+
+	const personToUpdate = persons.find((person) => person.id === id);
+
+	personToUpdate.number = number;
+
+	response.json(personToUpdate)
+
 });
+
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+});
+

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
-import personService from './services/persons';
+import personServices from './services/persons';
 
 import { Filter } from './components/Filter';
 import { PersonForm } from './components/PersonForm';
@@ -14,15 +14,24 @@ const App = () => {
 	const [addedPerson, setAddedPerson] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
 
+	const fetchPeople = async () => {
+		try {
+			const response = await personServices.getAllPersons();
+			setPersons(response.data);
+		} catch (error) {
+			console.error('Error fetching people:', error);
+		}
+	};
+
 	useEffect(() => {
-		personService.getAllPersons().then(({ data })=> setPersons(data));
-	}, [persons]);
+		fetchPeople();
+	}, []);
 
 	const handleNameChange = (event) => setNewName(event.target.value);
 	const handleNumberChange = (event) => setNewNumber(event.target.value);
 	const handleNameSearch = (event) => setSearchedName(event.target.value);
 
-	const handlePersonSubmit = (event) => {
+	const handlePersonSubmit = async (event) => {
 		event.preventDefault();
 
 		if (newName.trim() === '' || newNumber.trim() === '') {
@@ -30,7 +39,7 @@ const App = () => {
 			return;
 		}
 
-		const existingPerson = persons.find(person => person.name.toLowerCase() === newName.toLowerCase());
+		const existingPerson = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase());
 
 		if (existingPerson) {
 			const confirmUpdate = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`);
@@ -38,28 +47,28 @@ const App = () => {
 			if (confirmUpdate) {
 				const updatedPerson = { ...existingPerson, number: newNumber };
 
-				personService.updatePerson(existingPerson.id, updatedPerson)
-					.then(({ data }) => {
-						setPersons(persons.map(person =>
-							person.id === existingPerson.id ? data : person
-						));
-						setNewName('');
-						setNewNumber('');
-					})
-					.catch(error => {
-						console.error('Error updating person:', error);
-						setErrorMsg(`Information of ${newName} has already been removed from the server`);
-					});
-			}
-		} else {
-			personService.createPerson({ name: newName, number: newNumber })
-				.then(({ data }) => {
-					setPersons(persons.concat(data));
+				try {
+					const { data } = await personServices.updatePerson(existingPerson.id, updatedPerson);
+
+					setPersons(persons.map((person) => person.id === existingPerson.id ? data : person));
 					setNewName('');
 					setNewNumber('');
-				})
-				.catch(error => console.error('Error adding person:', error));
+				} catch (error) {
+					console.error('Error updating person:', error);
+					setErrorMsg(`Information of ${newName} has already been removed from the server`);
+				}
+			}
+		} else {
+			try {
+				const { data } = await personServices.createPerson({ name: newName, number: newNumber });
+
+				setPersons([...persons, data]);
+				setNewName('');
+				setNewNumber('');
 				setAddedPerson(newName);
+			} catch (error) {
+				console.error('Error adding person:', error);
+			}
 		}
 	};
 
@@ -70,7 +79,7 @@ const App = () => {
 			<h2>Phonebook</h2>
 			{addedPerson && <div className="added-person">{`Added ${addedPerson}`}</div>}
 			{errorMsg && <div className="error">{errorMsg}</div>}
-			<Filter searchedName={searchedName} onNameSearch={handleNameSearch}/>
+			<Filter searchedName={searchedName} onNameSearch={handleNameSearch} />
 			<h3>Add a new person</h3>
 			<PersonForm
 				newName={newName}
@@ -80,9 +89,9 @@ const App = () => {
 				onNumberChange={handleNumberChange}
 			/>
 			<h2>Numbers</h2>
-			<Persons filteredPersons={filteredPersons} />
+			<Persons filteredPersons={filteredPersons} setPersons={setPersons} />
 		</div>
 	);
-}
+};
 
-export default App
+export default App;
