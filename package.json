@@ -11,7 +11,7 @@
     "build:backend": "cd backend && npm install",
     "copy:frontend": "cp -r frontend/dist/* backend/dist/",
     "deploy": "npm run build && render deploy",
-    "postinstall": "npm install --only=dev",
+    "postinstall": "npm install --only=dev"
   },
   "dependencies": {
     "concurrently": "^7.2.1"
