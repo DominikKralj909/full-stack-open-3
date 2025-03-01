@@ -1,14 +1,13 @@
 {
-  "name": "phonebook-app",
-  "private": true,
-  "version": "1.0.0",
-  "scripts": {
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && npm run dev",
-    "build": "npm run build:frontend && npm run build:backend && npm run copy:frontend",
-    "build:frontend": "cd frontend && npm install && npm run build",
-    "build:backend": "cd backend && npm install",
-    "copy:frontend": "cp -r frontend/dist/* backend/dist/",
-    "deploy": "npm run build && render deploy"
+    "name": "phonebook",
+    "version": "1.0.0",
+    "scripts": {
+      "start": "npm run build:frontend && npm run start:backend",
+      "build:frontend": "cd frontend && npm install --production=false && npm run build && cp -r dist ../backend/",
+      "start:backend": "cd backend && npm install && node index.js"
+    },
+    "engines": {
+      "node": ">=14.0.0"
+    }
   }
-}
+  
