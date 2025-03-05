@@ -2,6 +2,8 @@ import express from 'express';
 import morganBody from 'morgan-body';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import Person from './models/person.js';
 
 const persons = [
     { 
@@ -36,8 +38,14 @@ app.use(express.static('dist'));
 morganBody(app);
 
 // Routes
-app.get('/api/persons', (_, response) => {
-	response.json(persons);
+app.get('/api/persons', async (_, response) => {
+	try {
+		const persons = await Person.find({});
+		 console.log('Fetched persons:', persons);
+		response.json(persons);
+	} catch (error) {
+		response.status(500).json({ error: 'Failed to fetch persons' });
+	}
 });
 
 app.get('/api/persons/:id', (request, response) => {
@@ -63,27 +71,20 @@ app.delete('/api/persons/:id', (request, response) => {
 	response.json(person);
 });
 
-app.post('/api/persons', (request, response) => {
-	const uniqueId = Math.random().toString(36).substr(2, 9);
-
+app.post('/api/persons', async (request, response) => {
 	const { name, number } = request.body;
 
-	if (!name) {
-		return response.status(400).json({ error: 'Name is missing.' })
+	if (!name || !number) {
+		return response.status(400).json({ error: 'Name and number are required' });
 	}
 
-	if (!number)  {
-		return response.status(400).json({ error: 'Number is missing.' })
+	try {
+		const newPerson = new Person({ name, number });
+		const savedPerson = await newPerson.save();
+		response.status(201).json(savedPerson);
+	} catch (error) {
+		response.status(500).json({ error: 'Failed to save person' });
 	}
-
-	if (persons.find((person) => person.name === name)) {
-		return response.status(400).json({error: 'This person already exists in the phonebook.'})
-	}
-
-	const newPerson = { id: uniqueId, name: name, number: number };
-	persons.push(newPerson);
-
-	response.status(201).json(newPerson);
 });
 
 app.put('/api/persons/:id', (request, response) => {
