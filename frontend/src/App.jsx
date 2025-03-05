@@ -48,11 +48,12 @@ const App = () => {
 				const updatedPerson = { ...existingPerson, number: newNumber };
 
 				try {
-					const { data } = await personServices.updatePerson(existingPerson.id, updatedPerson);
+					const { data } = await personServices.updatePerson(existingPerson._id, updatedPerson);
 
-					setPersons(persons.map((person) => person.id === existingPerson.id ? data : person));
+					setPersons(persons.map((person) => person._id === existingPerson._id ? data : person));
 					setNewName('');
 					setNewNumber('');
+					fetchPeople();
 				} catch (error) {
 					console.error('Error updating person:', error);
 					setErrorMsg(`Information of ${newName} has already been removed from the server`);

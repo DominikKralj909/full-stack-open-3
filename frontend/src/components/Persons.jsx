@@ -10,16 +10,16 @@ export const Persons = ({ filteredPersons, setPersons }) => {
 			await personService.deletePerson(id);
 			console.log(`${name} deleted successfully`);
 
-			setPersons(filteredPersons.filter(person => person.id !== id));
+			setPersons(filteredPersons.filter(person => person._id !== id));
 		} catch (error) {
 			console.error('Error deleting person:', error);
 		}
 	}
 
-	return filteredPersons.length === 0 ? 'No persons found' : filteredPersons.map(({ name, number, id }) => (
-		<div key={id}>
+	return filteredPersons.length === 0 ? 'No persons found' : filteredPersons.map(({ name, number, _id }) => (
+		<div key={_id}>
 			<div>{name} - {number}</div>
-			<button onClick={() => handlePersonDelete(id, name)}>Delete</button>
+			<button onClick={() => handlePersonDelete(_id, name)}>Delete</button>
 		</div>
 	));
 }

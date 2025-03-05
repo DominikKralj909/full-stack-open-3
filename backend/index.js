@@ -2,31 +2,7 @@ import express from 'express';
 import morganBody from 'morgan-body';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import Person from './models/person.js';
-
-const persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-];
 
 const app = express();
 
@@ -36,6 +12,17 @@ app.use(cors());
 app.use(express.static('dist'));
 
 morganBody(app);
+
+app.use((error, request, response, next) => {
+	console.error(error.message);
+
+	if (error.name === 'CastError' && error.kind === 'ObjectId') return response.status(400).send({ error: 'Malformatted ID' });
+	
+
+	if (error.name === 'ValidationError') return response.status(400).json({ error: error.message });
+	
+	response.status(500).json({ error: 'Something went wrong!' });
+});
 
 // Routes
 app.get('/api/persons', async (_, response) => {
@@ -48,55 +35,81 @@ app.get('/api/persons', async (_, response) => {
 	}
 });
 
-app.get('/api/persons/:id', (request, response) => {
-	const id = request.params.id;
-	const person = persons.find((person) => person.id === id);
+app.get('/api/persons/:id', async (request, response) => {
+  const { id } = request.params;
 
-	if (!person) response.status(404).send('No person is found with this id.');
+  try {
+	const person = await Person.findById(id);
 
+	if (!person) return response.status(404).json({ error: 'Person not found' });
+	
 	response.json(person);
+	} catch (error) {
+		response.status(500).json({ error: 'Failed to fetch person' });
+	}
 });
 
-app.get('/api/info', (_, response) => {
+app.get('/api/info', async (_, response) => {
+	try {
+		const count = await Person.countDocuments(); 
 	response.send(`
-		<p>Phonebook has info for ${persons.length} people.</p>
+		<p>Phonebook has info for ${count} people.</p>
 		<p>${new Date()}</p>
 	`);
-});
-
-app.delete('/api/persons/:id', (request, response) => {
-	const id = request.params.id;
-	const person = persons.filter((person) => person.id !== id);
-
-	response.json(person);
-});
-
-app.post('/api/persons', async (request, response) => {
-	const { name, number } = request.body;
-
-	if (!name || !number) {
-		return response.status(400).json({ error: 'Name and number are required' });
+	} catch (error) {
+		response.status(500).json({ error: 'Failed to fetch info' });
 	}
+});
+
+app.delete('/api/persons/:id', async (request, response) => {
+	const { id } = request.params;
 
 	try {
-		const newPerson = new Person({ name, number });
-		const savedPerson = await newPerson.save();
-		response.status(201).json(savedPerson);
+		const person = await Person.findByIdAndDelete(id);
+
+		if (!person) return response.status(404).json({ error: 'Person not found' });
+		
+		response.status(204).end(); 
 	} catch (error) {
-		response.status(500).json({ error: 'Failed to save person' });
+		console.error(error);
+		response.status(500).json({ error: 'Failed to delete person' });
 	}
 });
 
-app.put('/api/persons/:id', (request, response) => {
-	const id = request.params.id;
-	const { number } = request.body;
+app.post('/api/persons', async (request, response, next) => {
+	const { name, number } = request.body;
 
-	const personToUpdate = persons.find((person) => person.id === id);
+	try {
+		const existingPerson = await Person.findOne({ name });
 
-	personToUpdate.number = number;
+	if (existingPerson) {
+		existingPerson.number = number;
+		await existingPerson.save();
+		return response.status(200).json(existingPerson);
+	}
 
-	response.json(personToUpdate)
+	const person = new Person({ name, number });
+	const savedPerson = await person.save();
+	response.status(201).json(savedPerson);
 
+	} catch (error) {
+		next(error);
+	}
+});
+
+app.put('/api/persons/:id', async (request, response, next) => {
+  const { id } = request.params;
+  const { number } = request.body;
+
+  try {
+	const updatedPerson = await Person.findByIdAndUpdate(id, { number }, { new: true, runValidators: true });
+
+	if (!updatedPerson) return response.status(404).json({ error: 'Person not found' });
+
+	response.json(updatedPerson);
+	} catch (error) {
+		next(error);
+	}
 });
 
 const PORT = process.env.PORT || 3001;
