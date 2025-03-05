@@ -1,4 +1,4 @@
-import personService from '../services/persons'
+import personServices from '../services/persons'
 
 export const Persons = ({ filteredPersons, setPersons }) => {	
 	const handlePersonDelete = async (id, name) => {
@@ -7,7 +7,7 @@ export const Persons = ({ filteredPersons, setPersons }) => {
 		if (!isConfirmed) return;
 
 		try {
-			await personService.deletePerson(id);
+			await personServices.deletePerson(id);
 			console.log(`${name} deleted successfully`);
 
 			setPersons(filteredPersons.filter(person => person._id !== id));

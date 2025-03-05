@@ -39,6 +39,17 @@ const App = () => {
 			return;
 		}
 
+		if (newName.trim().length < 3) {
+			setErrorMsg('Name must be atleast 3 characters long');
+		}
+
+		const phoneRegex = /^[0-9]{2,3}-[0-9]+$/;
+		
+		if (!phoneRegex.test(newNumber)) {
+			setErrorMsg('Phone number must be in the format of XX-XXXXXXX or XXX-XXXXXXX');
+			return;
+		}
+
 		const existingPerson = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase());
 
 		if (existingPerson) {
