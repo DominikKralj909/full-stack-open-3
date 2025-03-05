@@ -3,16 +3,6 @@ import morganBody from 'morgan-body';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
-const app = express();
-
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(cors());
-app.use(express.static('dist'));
-
-morganBody(app);
-
-
 const persons = [
     { 
       "id": "1",
@@ -35,6 +25,15 @@ const persons = [
       "number": "39-23-6423122"
     }
 ];
+
+const app = express();
+
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(cors());
+app.use(express.static('dist'));
+
+morganBody(app);
 
 // Routes
 app.get('/api/persons', (_, response) => {

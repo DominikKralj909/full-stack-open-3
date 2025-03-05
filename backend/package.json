@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for Phonebook app",
   "main": "index.js",
-   "scripts": {
+  "scripts": {
     "start": "node index.js",
     "build:ui": "rm -rf dist && cd ../frontend && npm run build && cp -r dist ../backend",
     "deploy:full": "npm run build:ui && git add . && git commit -m 'uibuild' && git push"
@@ -14,6 +14,8 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "mongodb": "^6.14.0",
+    "mongoose": "^8.12.1",
     "morgan": "^1.10.0",
     "morgan-body": "^2.6.9"
   },
