@@ -2,12 +2,11 @@
     "name": "phonebook",
     "version": "1.0.0",
     "scripts": {
-      "start": "npm run build:frontend && npm run start:backend",
-      "build:frontend": "cd frontend && npm install --production=false && npm run build && cp -r dist ../backend/",
-      "start:backend": "cd backend && npm install && node index.js"
+        "start": "npm run build:frontend && npm run start:backend",
+        "build:frontend": "cd frontend && npm install --production=false && npm run build && cp -r dist ../backend/",
+        "start:backend": "cd backend && npm install && node index.js"
     },
     "engines": {
-      "node": ">=14.0.0"
+        "node": ">=14.0.0"
     }
-  }
-  
+}

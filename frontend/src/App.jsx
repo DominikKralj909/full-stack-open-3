@@ -44,7 +44,7 @@ const App = () => {
 		}
 
 		const phoneRegex = /^[0-9]{2,3}-[0-9]+$/;
-		
+
 		if (!phoneRegex.test(newNumber)) {
 			setErrorMsg('Phone number must be in the format of XX-XXXXXXX or XXX-XXXXXXX');
 			return;
